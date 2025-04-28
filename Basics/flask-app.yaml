@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: server
+        image: atmghan/my-flask-app:v2
+        ports:
+        - name: http
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec:
+  selector:
+    app: flask
+  ports:
+    - name: http-web
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+    - name: http-metrics
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: LoadBalancer
